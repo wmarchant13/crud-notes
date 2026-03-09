@@ -37,7 +37,7 @@
         <button class="edit-btn">Edit</button>
         <button class="delete-btn">Delete</button>
       </div>
-      <div class="edit-mode" style="display:none; margin-top:10px;">
+      <div class="edit-mode" style="display: none; margin-top: 10px">
         <input class="edit-title" type="text" value="{{ note.title }}" />
         <br />
         <textarea class="edit-content">{{ note.content }}</textarea>
@@ -58,60 +58,65 @@
     </form>
     <script>
       function handleError(resp) {
-        return resp.json().then(j => { throw new Error(j.error || resp.statusText); });
+        return resp.json().then((j) => {
+          throw new Error(j.error || resp.statusText);
+        });
       }
 
-      document.addEventListener('click', function(e) {
+      document.addEventListener("click", function (e) {
         // Delete
-        if (e.target.classList.contains('delete-btn')) {
-          const el = e.target.closest('.note');
+        if (e.target.classList.contains("delete-btn")) {
+          const el = e.target.closest(".note");
           const id = el.dataset.id;
-          if (!confirm('Delete this note?')) return;
-          fetch(`/notes/${id}`, { method: 'DELETE' })
-            .then(resp => {
+          if (!confirm("Delete this note?")) return;
+          fetch(`/notes/${id}`, { method: "DELETE" })
+            .then((resp) => {
               if (!resp.ok) return handleError(resp);
               el.remove();
             })
-            .catch(err => alert('Error deleting note: ' + err.message));
+            .catch((err) => alert("Error deleting note: " + err.message));
         }
 
         // Edit (show edit form)
-        if (e.target.classList.contains('edit-btn')) {
-          const el = e.target.closest('.note');
-          el.querySelector('.view-mode').style.display = 'none';
-          el.querySelector('.edit-mode').style.display = '';
+        if (e.target.classList.contains("edit-btn")) {
+          const el = e.target.closest(".note");
+          el.querySelector(".view-mode").style.display = "none";
+          el.querySelector(".edit-mode").style.display = "";
         }
 
         // Cancel edit
-        if (e.target.classList.contains('cancel-btn')) {
-          const el = e.target.closest('.note');
-          el.querySelector('.edit-mode').style.display = 'none';
-          el.querySelector('.view-mode').style.display = '';
+        if (e.target.classList.contains("cancel-btn")) {
+          const el = e.target.closest(".note");
+          el.querySelector(".edit-mode").style.display = "none";
+          el.querySelector(".view-mode").style.display = "";
         }
 
         // Save edit
-        if (e.target.classList.contains('save-btn')) {
-          const el = e.target.closest('.note');
+        if (e.target.classList.contains("save-btn")) {
+          const el = e.target.closest(".note");
           const id = el.dataset.id;
-          const title = el.querySelector('.edit-title').value.trim();
-          const content = el.querySelector('.edit-content').value.trim();
-          if (!title || !content) { alert('Title and content required'); return; }
+          const title = el.querySelector(".edit-title").value.trim();
+          const content = el.querySelector(".edit-content").value.trim();
+          if (!title || !content) {
+            alert("Title and content required");
+            return;
+          }
           fetch(`/notes/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, content })
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, content }),
           })
-          .then(resp => {
-            if (!resp.ok) return handleError(resp);
-            return resp.json();
-          })
-          .then(data => {
-            el.querySelector('.note-title').textContent = data.title;
-            el.querySelector('.note-content').textContent = data.content;
-            el.querySelector('.edit-mode').style.display = 'none';
-            el.querySelector('.view-mode').style.display = '';
-          })
-          .catch(err => alert('Error updating note: ' + err.message));
+            .then((resp) => {
+              if (!resp.ok) return handleError(resp);
+              return resp.json();
+            })
+            .then((data) => {
+              el.querySelector(".note-title").textContent = data.title;
+              el.querySelector(".note-content").textContent = data.content;
+              el.querySelector(".edit-mode").style.display = "none";
+              el.querySelector(".view-mode").style.display = "";
+            })
+            .catch((err) => alert("Error updating note: " + err.message));
         }
       });
     </script>
