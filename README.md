@@ -1,48 +1,65 @@
 # crud-notes
 
-A simple CRUD web application built with Python using the Flask framework and SQLite. It allows notes to create, view, edit, and delete notes through a minimal web interface using HTML templates.
+A simple CRUD web application using Flask + SQLite. The repo contains the app, templates, and a SQL schema — the database file itself is intentionally not tracked.
 
-Here’s a simple step‑by‑step of how the app works:
+Quick start (local development)
 
-create_app() builds the Flask app and wires everything together.
+1. Create and activate a virtual environment (recommended):
 
-Database file: flaskr/notes.db; schema is in flaskr/schema.sql.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-get_db(): on each request it opens (or returns) a sqlite3 connection stored on flask.g and sets row_factory so rows can be converted to dicts.
+2. Install dependencies:
 
-@app.teardown_appcontext: closes the DB connection after the request finishes.
+```bash
+pip install -r requirements.txt
+```
 
-init_db(): on startup (with app.app_context()) it creates the DB from schema.sql if notes.db doesn’t exist.
+3. Initialize the database (required on a fresh clone)
 
-Routes (HTTP endpoints):
+```bash
+python3 init_db.py
+```
 
-GET / -> home(): reads all notes, renders templates/index.html with notes (server-rendered HTML).
+This creates the SQLite database file configured in `app.config['DATABASE']` (default: `database.db`). The SQL schema lives in `schema.sql`.
 
-POST /add_note -> add_note_form(): handles an HTML form (request.form), inserts a note, then redirects back to /.
+4. Run the app:
 
-GET /notes -> get_notes(): returns all notes as JSON (useful for JS or API clients).
+```bash
+python3 app.py
+# then open http://127.0.0.1:8000/
+```
 
-POST /notes -> create_note(): accepts JSON (request.json) to create a note, returns the new note and id.
+Notes about repository history
 
-GET /notes/<id> -> get_note(): returns one note as JSON or 404 if missing.
+- The local SQLite DB file is not tracked (see `.gitignore`). If you previously committed a DB file, it has been removed from the repository and purged from history;
 
-PUT /notes/<id> -> update_note(): accepts JSON to update title/content, checks rowcount to detect missing note.
+App structure (short)
 
-DELETE /notes/<id> -> delete_note(): deletes note, checks rowcount and returns status or 404.
+- `app/` — application package: routes, DB helpers, templates
+- `app/templates/index.html` — main board UI
+- `schema.sql` — SQL schema used by `init_db.py`
+- `init_db.py` — one-off script that initializes the DB inside the application context
 
-DB operations: use cursor.execute(...), db.commit(), cursor.lastrowid for new IDs, cursor.rowcount to see affected rows.
+API & pages
 
-Typical web flow:
+- `GET /` — home page (server-rendered board UI)
+- `POST /add_note` — form handler (HTML form -> redirect)
+- `GET /notes` — list notes as JSON
+- `POST /notes` — create note (JSON API)
+- `PUT /notes/<id>` — update note (JSON)
+- `DELETE /notes/<id>` — delete note (JSON)
 
-Browser requests / -> server queries DB and sends HTML with notes.
+Troubleshooting
 
-Submitting the HTML form POSTs to /add_note -> server inserts and redirects.
+- If the app raises "Working outside of application context" when running scripts, make sure DB initialization is executed inside the app context — `init_db.py` already does this.
 
-Frontend JS could call the /notes JSON endpoints to create/update/delete notes dynamically.
+Contributing
 
-Initialization (no CLI)
+- Create feature branches, run tests/manual smoke tests, and open a PR.
 
-- One-off script: run `python3 init_db.py` to create the database from `schema.sql`.
-- Automatic on startup: the app will create the DB file if missing when run with `python3 app.py` or on first request.
+License / notes
 
-CLI (optional): set `FLASK_APP=app` and use `flask init-db` to initialize via Flask CLI.
+- Small demo app intended for learning; modify as you wish.
