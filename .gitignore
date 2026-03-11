@@ -1,0 +1,19 @@
+# Ignore SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Ignore instance folder (local runtime files)
+/instance/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments and env files
+venv/
+.env
+.env.*
+
+# OS files
+.DS_Store
