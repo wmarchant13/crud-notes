@@ -1,4 +1,4 @@
-<!-- flaskr/templates/index.html -->
+<!-- Board-style notes UI -->
 <!doctype html>
 <html lang="en">
   <head>
@@ -6,56 +6,224 @@
     <title>My Notes</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        margin: 40px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial;
+        margin: 0;
+        background: #f1efe6;
+        min-height: 100vh;
       }
+      .board {
+        position: relative;
+        padding: 40px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: flex-start;
+      }
+
+      .add-form {
+        width: 240px;
+        min-height: 160px;
+        background: #fff9c4;
+        padding: 12px;
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.12);
+        border-radius: 6px;
+        transform: rotate(-1deg);
+        flex: 0 0 auto;
+        position: relative;
+      }
+      .add-form h3 {
+        margin: 4px 0 8px 0;
+        font-size: 16px;
+      }
+      .add-form input,
+      .add-form textarea {
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 8px;
+        padding: 6px;
+        border: 1px solid #e0dca8;
+        border-radius: 4px;
+      }
+      .add-form button {
+        background: #f2b632;
+        border: none;
+        padding: 8px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .add-form::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        width: 60px;
+        height: 12px;
+        background: linear-gradient(90deg, #fff8d6, #fff3b0);
+        transform: translateX(-50%) rotate(-6deg);
+        border-radius: 3px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+
       .note {
-        border: 1px solid #ccc;
-        padding: 15px;
-        margin-bottom: 10px;
+        width: 220px;
+        min-height: 160px;
+        padding: 14px;
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.14);
+        border-radius: 6px;
+        position: relative;
+        transform-origin: center;
+        flex: 0 0 auto;
       }
       .note h2 {
-        margin: 0 0 10px 0;
+        margin: 0 0 8px 0;
+        font-size: 16px;
       }
       .note p {
-        margin: 0;
+        margin: 0 0 10px 0;
+        white-space: pre-wrap;
       }
-      .note small {
-        color: #666;
+      .note .meta {
+        position: absolute;
+        bottom: 8px;
+        left: 10px;
+        font-size: 11px;
+        color: #6b6b6b;
+      }
+      .note .note-actions {
+        position: absolute;
+        top: 6px;
+        right: 8px;
+      }
+      .note .note-actions button {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      /* color variants */
+      .color-0 {
+        background: #fff7a8;
+      }
+      .color-1 {
+        background: #ffd59e;
+      }
+      .color-2 {
+        background: #c8f7c5;
+      }
+      .color-3 {
+        background: #e0d6ff;
+      }
+      .color-4 {
+        background: #ffccd6;
+      }
+      .color-5 {
+        background: #f8f0d6;
+      }
+
+      .edit-mode {
+        margin-top: 8px;
+      }
+      .edit-title,
+      .edit-content {
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 6px;
+        box-sizing: border-box;
+      }
+      .edit-actions button {
+        margin-right: 6px;
+      }
+
+      .empty {
+        color: #555;
+        padding: 20px;
+      }
+      /* Modal */
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        align-items: center;
+        justify-content: center;
+        z-index: 1200;
+      }
+      .modal {
+        background: #fff;
+        padding: 18px;
+        border-radius: 8px;
+        width: 320px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      }
+      .modal h4 {
+        margin: 0 0 8px 0;
+      }
+      .modal .modal-actions {
+        margin-top: 14px;
+        text-align: right;
+      }
+      .modal .btn {
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+      }
+      .btn-cancel {
+        background: #e6e6e6;
+      }
+      .btn-delete {
+        background: #e74c3c;
+        color: white;
+      }
+      body.modal-open {
+        overflow: hidden;
       }
     </style>
   </head>
   <body>
-    <h1>My Notes</h1>
-    {% for note in notes %}
-    <div class="note" data-id="{{ note.id }}">
-      <div class="view-mode">
-        <h2 class="note-title">{{ note.title }}</h2>
-        <p class="note-content">{{ note.content }}</p>
-        <small>Created at: {{ note.created_at }}</small>
-        <br />
-        <button class="edit-btn">Edit</button>
-        <button class="delete-btn">Delete</button>
+    <div class="board">
+      <form class="add-form" method="POST" action="/add_note">
+        <h3>Add Note</h3>
+        <input type="text" name="title" placeholder="Title" required />
+        <textarea name="content" placeholder="Content" required></textarea>
+        <button type="submit">Add</button>
+      </form>
+
+      {% if notes %} {% for note in notes %}
+      <div
+        class="note color-0"
+        data-id="{{ note.id }}"
+        style="transform: rotate({{ ((loop.index0 % 5) - 2) }}deg)"
+      >
+        <div class="view-mode">
+          <h2 class="note-title">{{ note.title }}</h2>
+          <p class="note-content">{{ note.content }}</p>
+          <small class="meta"
+            >{% if note.updated_at %}Edited: {{ note.updated_at }}{% else
+            %}Created: {{ note.created_at }}{% endif %}</small
+          >
+          <div class="note-actions">
+            <button class="edit-btn">✎</button>
+            <button class="delete-btn">✖</button>
+          </div>
+        </div>
+        <div class="edit-mode" style="display: none">
+          <input class="edit-title" type="text" value="{{ note.title }}" />
+          <textarea class="edit-content">{{ note.content }}</textarea>
+          <div class="edit-actions">
+            <button class="save-btn">Save</button>
+            <button class="cancel-btn">Cancel</button>
+          </div>
+        </div>
       </div>
-      <div class="edit-mode" style="display: none; margin-top: 10px">
-        <input class="edit-title" type="text" value="{{ note.title }}" />
-        <br />
-        <textarea class="edit-content">{{ note.content }}</textarea>
-        <br />
-        <button class="save-btn">Save</button>
-        <button class="cancel-btn">Cancel</button>
-      </div>
+      {% endfor %} {% else %}
+      <div class="empty">No notes yet — add one.</div>
+      {% endif %}
     </div>
-    {% else %}
-    <p>No notes found.</p>
-    {% endfor %}
-    <form method="POST" action="/add_note">
-      <input type="text" name="title" placeholder="Title" required />
-      <br />
-      <textarea name="content" placeholder="Content" required></textarea>
-      <br />
-      <button type="submit">Add Note</button>
-    </form>
     <script>
       function handleError(resp) {
         return resp.json().then((j) => {
@@ -64,17 +232,16 @@
       }
 
       document.addEventListener("click", function (e) {
-        // Delete
+        // Delete (show modal)
         if (e.target.classList.contains("delete-btn")) {
           const el = e.target.closest(".note");
           const id = el.dataset.id;
-          if (!confirm("Delete this note?")) return;
-          fetch(`/notes/${id}`, { method: "DELETE" })
-            .then((resp) => {
-              if (!resp.ok) return handleError(resp);
-              el.remove();
-            })
-            .catch((err) => alert("Error deleting note: " + err.message));
+          const title = el.querySelector(".note-title").textContent;
+          const backdrop = document.getElementById("modal-backdrop");
+          backdrop.querySelector(".modal-note-title").textContent = title;
+          backdrop.dataset.noteId = id;
+          backdrop.style.display = "flex";
+          document.body.classList.add("modal-open");
         }
 
         // Edit (show edit form)
@@ -113,10 +280,73 @@
             .then((data) => {
               el.querySelector(".note-title").textContent = data.title;
               el.querySelector(".note-content").textContent = data.content;
+              // update meta text
+              const meta = el.querySelector(".meta");
+              if (data.updated_at)
+                meta.textContent = "Edited: " + data.updated_at;
               el.querySelector(".edit-mode").style.display = "none";
               el.querySelector(".view-mode").style.display = "";
             })
             .catch((err) => alert("Error updating note: " + err.message));
+        }
+      });
+    </script>
+    <!-- Delete confirmation modal -->
+    <div id="modal-backdrop" class="modal-backdrop" style="display: none">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h4>Delete Note</h4>
+        <div>
+          Are you sure you want to delete
+          <strong class="modal-note-title"></strong>?
+        </div>
+        <div class="modal-actions">
+          <button id="modal-cancel" class="btn btn-cancel">Cancel</button>
+          <button id="modal-delete" class="btn btn-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      document
+        .getElementById("modal-cancel")
+        .addEventListener("click", function () {
+          const backdrop = document.getElementById("modal-backdrop");
+          backdrop.style.display = "none";
+          document.body.classList.remove("modal-open");
+        });
+
+      document
+        .getElementById("modal-delete")
+        .addEventListener("click", function () {
+          const backdrop = document.getElementById("modal-backdrop");
+          const id = backdrop.dataset.noteId;
+          if (!id) return;
+          fetch(`/notes/${id}`, { method: "DELETE" })
+            .then((resp) => {
+              if (!resp.ok) return handleError(resp);
+              const el = document.querySelector('.note[data-id="' + id + '"]');
+              if (el) el.remove();
+              backdrop.style.display = "none";
+              document.body.classList.remove("modal-open");
+            })
+            .catch((err) => alert("Error deleting note: " + err.message));
+        });
+
+      document
+        .getElementById("modal-backdrop")
+        .addEventListener("click", function (e) {
+          if (e.target.id === "modal-backdrop") {
+            this.style.display = "none";
+            document.body.classList.remove("modal-open");
+          }
+        });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          const b = document.getElementById("modal-backdrop");
+          if (b && b.style.display === "flex") {
+            b.style.display = "none";
+            document.body.classList.remove("modal-open");
+          }
         }
       });
     </script>
